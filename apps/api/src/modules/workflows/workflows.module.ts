@@ -3,9 +3,10 @@ import { WorkflowOrchestratorService } from './engine/workflow-orchestrator.serv
 import { WorkflowLockService } from './engine/workflow-lock.service';
 import { WorkflowsController } from './workflows.controller';
 import { WorkflowsService } from './workflows.service';
+import { RedisModule } from '../../common/redis/redis.module';
 
 @Module({
-    imports: [],
+    imports: [RedisModule],
     controllers: [WorkflowsController],
     providers: [WorkflowsService, WorkflowOrchestratorService, WorkflowLockService],
     exports: [WorkflowOrchestratorService, WorkflowsService],

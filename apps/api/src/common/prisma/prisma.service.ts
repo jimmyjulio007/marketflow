@@ -5,6 +5,7 @@ import { prisma, PrismaClient } from '@marketflow/database';
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
     // Expose the prisma instance for dependency injection
     private _prisma = prisma;
+    $queryRaw: any;
 
     // Proxy all Prisma methods through this service
     get $transaction(): PrismaClient['$transaction'] {
