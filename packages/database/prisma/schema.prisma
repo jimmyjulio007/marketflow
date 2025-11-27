@@ -1,0 +1,122 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+// --- Multi-Tenancy ---
+
+model Tenant {
+    id        String   @id @default(cuid())
+    name      String
+    slug      String   @unique
+    plan      String   @default("FREE") // FREE, PRO, BIZ
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    users     User[]
+    workflows Workflow[]
+    apiKeys   ApiKey[]
+
+    @@index([slug])
+}
+
+model User {
+    id       String  @id @default(cuid())
+    email    String  @unique
+    name     String?
+    password String? // If using email/pass, otherwise handled by auth provider
+    image    String?
+
+    tenantId String
+    tenant   Tenant @relation(fields: [tenantId], references: [id])
+    role     String @default("OPERATOR") // OWNER, ADMIN, OPERATOR
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+}
+
+model ApiKey {
+    id        String    @id @default(cuid())
+    key       String    @unique
+    name      String?
+    tenantId  String
+    tenant    Tenant    @relation(fields: [tenantId], references: [id])
+    createdAt DateTime  @default(now())
+    expiresAt DateTime?
+
+    @@index([tenantId])
+}
+
+// --- Durable Workflows ---
+
+model Workflow {
+    id          String   @id @default(cuid())
+    tenantId    String
+    tenant      Tenant   @relation(fields: [tenantId], references: [id])
+    name        String
+    description String?
+    definition  Json // The JSON graph of nodes/edges
+    isActive    Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    executions WorkflowExecution[]
+    cronJobs   CronJob[]
+
+    @@index([tenantId])
+}
+
+model WorkflowExecution {
+    id          String    @id @default(cuid())
+    workflowId  String
+    workflow    Workflow  @relation(fields: [workflowId], references: [id])
+    status      String // PENDING, RUNNING, COMPLETED, FAILED, WAITING
+    context     Json // Current state of variables
+    startedAt   DateTime  @default(now())
+    completedAt DateTime?
+
+    steps WorkflowExecutionStep[]
+
+    @@index([workflowId])
+    @@index([status])
+}
+
+model WorkflowExecutionStep {
+    id          String            @id @default(cuid())
+    executionId String
+    execution   WorkflowExecution @relation(fields: [executionId], references: [id])
+    stepId      String // ID from the definition
+    status      String // SUCCESS, FAILURE
+    input       Json?
+    output      Json?
+    error       String?
+    durationMs  Int?
+    startedAt   DateTime          @default(now())
+    completedAt DateTime?
+
+    @@index([executionId])
+}
+
+// --- Cron Engine ---
+
+model CronJob {
+    id         String    @id @default(cuid())
+    tenantId   String
+    workflowId String
+    workflow   Workflow  @relation(fields: [workflowId], references: [id])
+    schedule   String // Cron expression e.g. "0 9 * * *"
+    lastRunAt  DateTime?
+    nextRunAt  DateTime?
+    isActive   Boolean   @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+}

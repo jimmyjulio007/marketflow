@@ -1,13 +1,21 @@
 import { Module } from '@nestjs/common';
-
-import { LinksModule } from './links/links.module';
-
-import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PrismaModule } from './common/prisma/prisma.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CronModule } from './modules/cron/cron.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [LinksModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    PrismaModule,
+    WorkflowsModule,
+    AuthModule,
+    CronModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
