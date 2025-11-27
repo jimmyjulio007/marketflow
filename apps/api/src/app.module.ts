@@ -6,13 +6,19 @@ import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CronModule } from './modules/cron/cron.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { UserModule } from './modules/user/user.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     PrismaModule,
-    WorkflowsModule,
     AuthModule,
+    TenantModule,
+    UserModule,
+    WorkflowsModule,
+    EventsModule,
     CronModule,
   ],
   controllers: [AppController],
