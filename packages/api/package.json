@@ -4,8 +4,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm build --watch",
-    "build": "tsc -b -v",
+    "dev": "node init && pnpm build --watch",
+    "build": "node init && tsc -b -v",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "main": "./dist/entry.js",
